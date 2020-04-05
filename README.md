@@ -1,21 +1,17 @@
 # numpycl
-=====
 Numerical Library Written in Python with PyOpenCL
 
 ## Requirements
-=====
 1. Python >= 3.6
 2. PyOpenCL
 3. Numpy
 
 ## Installation
-======
 ```bash
 pip install -r requirements.txt
 ```
 
 ## Usage Examples
-======
 * Conjugate Gradient Solver (cg_deblur_test.py)
 ```python
 import npcl
