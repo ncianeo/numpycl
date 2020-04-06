@@ -42,9 +42,9 @@ def solve_fbs(
         x_new = ProxR_solver(v, delta*mu)
         if cl_array.sum((x_new-x)**2).get() < cl_array.sum(x**2).get()*tol**2:
             break
-        if k == max_iter:
-            break
         if verbose is True:
             print('iteration number: ', k)
+        if k == max_iter:
+            break
         x = x_new.copy()
     return x_new, k

@@ -7,12 +7,11 @@ import numpy as np
 prg = None
 
 
-def build():
-    from npcl import ctx, queue
-    global ctx, queue
-    if ctx is None:
-        ctx = cl.create_some_context(interactive=False)
-        queue = cl.CommandQueue(ctx)
+def build(parameter):
+    if type(parameter) == cl.Context:
+        ctx = parameter
+    if type(parameter) == cl_array.Array:
+        ctx = parameter.context
     global prg
     kernel_fp = abspath(__file__).replace('.py', '.cl')
     prg = cl.Program(ctx, open(kernel_fp, 'r').read())
@@ -35,7 +34,8 @@ def convolve2d(x, k):
         y : output array.
     """
     if prg is None:
-        build()
+        build(x)
+    queue = x.queue
     res = cl_array.empty(queue, x.shape, np.float32)
     prg.convolve2d(
         queue, x.shape, None,
@@ -63,7 +63,8 @@ def convolve2d_sv(x, k):
         y : output array.
     """
     if prg is None:
-        build()
+        build(x)
+    queue = x.queue
     res = cl_array.empty(queue, x.shape, np.float32)
     prg.convolve2d_sv(
         queue, x.shape, None,
@@ -76,7 +77,8 @@ def convolve2d_sv(x, k):
 
 def transpose2d(k):
     if prg is None:
-        build()
+        build(k)
+    queue = k.queue
     kernel = cl_array.empty_like(k)
     prg.transpose2d(
         queue, k.shape, None,
@@ -87,7 +89,8 @@ def transpose2d(k):
 
 def transpose2d_sv(k):
     if prg is None:
-        build()
+        build(k)
+    queue = k.queue
     kernel = cl_array.empty_like(k)
     prg.transpose2d_sv(
         queue, k.shape[2:], None,
