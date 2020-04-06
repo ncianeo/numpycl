@@ -8,7 +8,7 @@ Numerical Library Written in Python with PyOpenCL
 
 ## Installation
 ```bash
-pip install -r requirements.txt
+python setup.py install
 ```
 
 ## Usage Examples
