@@ -18,7 +18,7 @@ def build(parameter):
     prg.build()
 
 
-def convolve2d(x, k):
+def convolve2d(x, k, padding='zero'):
     """
     Compute 2D convolution.
 
@@ -35,9 +35,15 @@ def convolve2d(x, k):
     """
     if prg is None:
         build(x)
+    if padding == 'zero':
+        run_kernel = prg.convolve2d_z
+    elif padding == 'same':
+        run_kernel = prg.convolve2d_s
+    elif padding == 'wrap':
+        run_kernel = prg.convolve2d_w
     queue = x.queue
     res = cl_array.empty(queue, x.shape, np.float32)
-    prg.convolve2d(
+    run_kernel(
         queue, x.shape, None,
         x.data, k.data, res.data,
         np.int32(k.shape[0]),
@@ -46,7 +52,7 @@ def convolve2d(x, k):
     return res
 
 
-def convolve2d_sv(x, k):
+def convolve2d_sv(x, k, padding='zero'):
     r"""
     Compute 2D spatially-variant convolution.
 
@@ -64,9 +70,15 @@ def convolve2d_sv(x, k):
     """
     if prg is None:
         build(x)
+    if padding == 'zero':
+        run_kernel = prg.convolve2d_sv_z
+    elif padding == 'same':
+        run_kernel = prg.convolve2d_sv_s
+    elif padding == 'wrap':
+        run_kernel = prg.convolve2d_sv_w
     queue = x.queue
     res = cl_array.empty(queue, x.shape, np.float32)
-    prg.convolve2d_sv(
+    run_kernel(
         queue, x.shape, None,
         x.data, k.data, res.data,
         np.int32(k.shape[0]),
