@@ -1,6 +1,7 @@
 from os.path import abspath
 import pyopencl as cl
 import pyopencl.array as cl_array
+import pyopencl.clmath as cl_math
 import numpy as np
 
 
@@ -44,3 +45,12 @@ def divergence2d(px, py):
     d = cl_array.zeros(queue, px.shape, dtype=np.float32)
     prg.divergence2d(queue, d.shape, None, px.data, py.data, d.data)
     return d
+
+
+def sign(x):
+    return ((x>=0).astype(np.float32)-0.5)*2
+
+
+def soft_shrink(x, mu):
+    shrinked = cl_math.fabs(x)-mu
+    return sign(x)*(shrinked>0)*shrinked

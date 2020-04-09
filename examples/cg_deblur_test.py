@@ -25,7 +25,7 @@ def A(x):
 
 
 deblurred, iters = npcl.solvers.cg.solve_cg(
-    A, blurry, x_0, verbose=True,
+    A, blurry, x_0, tol=1e-3, verbose=True,
     )
 
 cv2.imshow('deblurred', np.clip(deblurred.get(), 0, 255).astype(np.uint8))
