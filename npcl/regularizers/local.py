@@ -23,19 +23,18 @@ def denoise_tv(image, weight=0.1, eps=2.e-4, n_iter_max=100):
             out = img_dev + d
         else:
             out = img_dev
-        E = cl_array.sum((d ** 2))
+        E = cl_array.sum((d ** 2)).get()
         # g stores the gradients of out along each axis
         # e.g. g[0] is the first order finite difference along axis 0
         gx, gy = grad2d(out)
         norm = norm2d(gx, gy)
-        E += weight*cl_array.sum(norm)
+        E += weight*cl_array.sum(norm).get()
         norm *= tau/weight
         norm += np.float32(1)
         px = px-tau*gx
         py = py-tau*gy
         px /= norm
         py /= norm
-        E = E.get().item()
         E /= N
         if i == 0:
             E_init = E
