@@ -22,29 +22,27 @@ def solve_cg(A, b, x_0, tol=np.float32(1e-3), max_iter=None, verbose=False):
         x : (pyopencl.array.Array) the solution x.
         k : (int) the total iteration number.
     """
-    bnorm = cl_array.sum(b**2).get()
     r = b - A(x_0)
     p = r.copy()
     x = x_0.copy()
     dim = 1
     for d in x.shape:
         dim *= d
-    rnorm = cl_array.sum(r**2)
+    rsold = cl_array.sum(r**2)
     for k in range(dim):
         Ap = A(p)
-        alpha = (rnorm/cl_array.sum(p*Ap)).get()
+        alpha = (rsold/cl_array.sum(p*Ap)).get()
         x += alpha*p
-        r_new = r - alpha*Ap
-        rnorm_old = rnorm
-        rnorm = cl_array.sum(r_new**2)
+        r += -alpha*Ap
+        rsnew = cl_array.sum(r**2)
         if verbose is True:
             print('iteration number: ', k+1)
-        if rnorm.get() < tol**2*bnorm:
+        if np.sqrt(rsnew.get()) < tol:
             break
         if max_iter is not None:
             if k+1 == max_iter:
                 break
-        beta = (rnorm/rnorm_old).get()
-        p = r_new + beta*p
-        r = r_new.copy()
+        beta = (rsnew/rsold).get()
+        p = r + beta*p
+        rsold = rsnew
     return x, k

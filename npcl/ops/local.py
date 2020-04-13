@@ -48,9 +48,9 @@ def divergence2d(px, py):
 
 
 def sign(x):
-    return ((x>=0).astype(np.float32)-0.5)*2
+    return ((x >= 0).astype(np.float32)-0.5)*2
 
 
 def soft_shrink(x, mu):
     shrinked = cl_math.fabs(x)-mu
-    return sign(x)*(shrinked>0)*shrinked
+    return sign(x)*(shrinked > 0)*shrinked

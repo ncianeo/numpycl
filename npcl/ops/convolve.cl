@@ -1,3 +1,8 @@
+inline wrap(int x, int w){
+    int res = x % w;
+    return res<0?res+w:res;
+}
+
 __kernel void transpose2d(
     __global const float * input,
     __global float * output
@@ -51,12 +56,12 @@ __kernel void convolve2d_w(
     uint ref_i, ref_j;
 
     #pragma unroll
-    for(int hty = 0; hty< Nhy; ++hty){
-        ref_j = (j-Nhy/2+hty) % Ny;
+    for(int m = -Nhx/2; m < Nhx/2+1; ++m){
+        ref_i = wrap(i+m, Nx);
         #pragma unroll
-        for(int htx = 0; htx< Nhx; ++htx){
-            ref_i = (i-Nhx/2+htx) % Nx;
-            res += h[htx+hty*Nhx]*input[ref_i+ref_j*Nx];
+        for(int n = -Nhy/2; n< Nhy/2+1; ++n){
+            ref_j = wrap(j+n, Ny);
+            res += h[Nhx/2+m + Nhx*(Nhy/2+n)]*input[ref_i+Nx*ref_j];
         }
     }
     output[i+Nx*j] = res;
