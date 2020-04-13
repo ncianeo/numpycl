@@ -22,10 +22,10 @@ cv2.imshow('blurry', np.clip(blurry.get(), 0, 255).astype(np.uint8))
 cv2.waitKey(0)
 cv2.destroyAllWindows()
 
-deblurred, iter = npcl.solvers.deconv.deconv_fbs(
+deblurred, iter = npcl.solvers.deconv.deconv_fista(
     blurry, kernel, mu=1.0, delta=1.0, tol=1e-4,
     max_iter=1000, verbose=True,
-    )
+)
 
 cv2.imshow('deblurred', np.clip(deblurred.get(), 0, 255).astype(np.uint8))
 cv2.waitKey(0)

@@ -16,13 +16,13 @@ def solve_flb(
         minimize |x|_1 subject to Ax=b
 
     Inputs:
-        A : a python function that computes Ax, i.e.,
-            A(x) = Ax
+        ATA : a python function that computes A^TAx, i.e.,
+            ATA(x) = A^TAx
             for a vector (pyopencl.array.Array) x.
         AT : a python function that computes ATx, i.e.,
             AT(x) = ATx
             for a vector (pyopencl.array.Array) x.
-        b : (pyopencl.array.Array) represents the vector A^tb.
+        b : (pyopencl.array.Array) represents the vector b.
         delta : (np.float32) parameter for gradient update step.
         mu : (np.float32) l1 regularization parameter.
         tol : (np.float32) represents tolerence value.
@@ -34,10 +34,10 @@ def solve_flb(
         k : (int) the total iteration number.
     """
     ATb = AT(b)
-    
+
     def ATA(x):
         return AT(A(x))
-    
+
     def norm(x):
         return cl_array.sum(cl_math.fabs(x)).get()
 
@@ -56,10 +56,10 @@ def solve_flb(
         kick_test = kick_test[-4:] + [residual]
         if min(kick_test)+stuck > max(kick_test):
             k += 1
-            I_0 = (x_new==0.).astype(np.float32)
+            I_0 = (x_new == 0.).astype(np.float32)
             r = ATb-ATA(x_new)
             s = ((mu*sign(r)-v)/r).astype(np.int32)*I_0
-            smin = cl_array.min(s + 1e7*(1-I_0)).get()
+            smin = np.float32(cl_array.min(s + 1e7*(1-I_0)).get())
             if smin <= 2:
                 v += r
             else:

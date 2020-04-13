@@ -34,16 +34,24 @@ def solve_fbs(
         x : (pyopencl.array.Array) the solution x.
         k : (int) the total iteration number.
     """
+
+    def norms(x):
+        return cl_array.sum(x**2).get()
+
     x = x_0.copy()
     k = 0
     while True:
         k += 1
         v = x - delta*(ATA(x)-ATb)
         x_new = ProxR_solver(v, delta*mu)
-        if cl_array.sum((x_new-x)**2).get() < cl_array.sum(x**2).get()*tol**2:
-            break
+        seq_diff = norms(x-x_new)
         if verbose is True:
-            print('iteration number: ', k)
+            print(
+                'iteration number: ', k, ', sequential difference: ',
+                seq_diff/norms(x),
+                )
+        if seq_diff < norms(x)*tol**2:
+            break
         if k == max_iter:
             break
         x = x_new.copy()
