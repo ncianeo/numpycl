@@ -39,6 +39,9 @@ def solve_fbs(
         return cl_array.sum(x**2).get()
 
     x = x_0.copy()
+    dim = 1
+    for d in x.shape:
+        dim *= d
     k = 0
     while True:
         k += 1
@@ -48,9 +51,9 @@ def solve_fbs(
         if verbose is True:
             print(
                 'iteration number: ', k, ', sequential difference: ',
-                seq_diff/norms(x),
+                np.sqrt(seq_diff/dim),
                 )
-        if seq_diff < norms(x)*tol**2:
+        if seq_diff < dim*tol**2:
             break
         if k == max_iter:
             break

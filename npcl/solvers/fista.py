@@ -45,6 +45,9 @@ def solve_fista(
     y = xold.copy()
     told = np.float32(1.)
     k = 0
+    dim = 1
+    for d in y.shape:
+        dim *= d
 
     def p_L(x):
         return ProxR_solver(x-delta*(ATA(x)-ATb), mu*delta)
@@ -64,7 +67,6 @@ def solve_fista(
         yold = y
         y = x + beta*(x-xold)
         seq_diff = norms(x-xold)
-        nold = norms(xold)
         if restarting:
             if restart(yold, x, xold):
                 print(
@@ -75,9 +77,9 @@ def solve_fista(
         if verbose is True:
             print(
                 'iteration number: ', k, ', sequential difference: ',
-                seq_diff/nold,
+                np.sqrt(seq_diff/dim),
                 )
-        if seq_diff < nold*tol**2:
+        if seq_diff < dim*tol**2:
             break
         if k == max_iter:
             break
@@ -134,6 +136,9 @@ def solve_gfista(
     y = x.copy()
     delta0 = np.float32(delta*L_inv)
     k = 0
+    dim = 1
+    for d in x.shape:
+        dim *= d
 
     def p_L(x, delta):
         return ProxR_solver(x-delta*(ATA(x)-ATb), mu*delta)
@@ -168,9 +173,9 @@ def solve_gfista(
         if verbose:
             print(
                 'iteration number: ', k, ', sequential difference: ',
-                seq_diff/norms(xold),
+                np.sqrt(seq_diff/dim),
                 )
-        if seq_diff < tol**2:
+        if seq_diff < dim*tol**2:
             break
         if k == max_iter:
             break

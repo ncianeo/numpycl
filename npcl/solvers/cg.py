@@ -25,7 +25,6 @@ def solve_cg(A, b, x_0, tol=np.float32(1e-3), max_iter=None, verbose=False):
     r = b - A(x_0)
     p = r.copy()
     x = x_0.copy()
-    bnorm = cl_array.sum(b**2).get()
     dim = 1
     for d in x.shape:
         dim *= d
@@ -37,8 +36,11 @@ def solve_cg(A, b, x_0, tol=np.float32(1e-3), max_iter=None, verbose=False):
         r += -alpha*Ap
         rsnew = cl_array.sum(r**2).get()
         if verbose is True:
-            print('iteration number: ', k+1, ', residual: ', rsnew)
-        if rsnew < bnorm*tol**2:
+            print(
+                'iteration number: ', k+1,
+                ', residual: ', np.sqrt(rsnew/dim),
+                )
+        if rsnew < dim*tol**2:
             break
         if max_iter is not None:
             if k+1 == max_iter:
