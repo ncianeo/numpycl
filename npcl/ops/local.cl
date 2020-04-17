@@ -43,8 +43,8 @@ __kernel void divergence2d(
     int Ny = get_global_size(1);
 
     float dx, dy;
-    dx = i>0?px[i+Nx*j]-px[i-1+Nx*j]:0;
-    dy = j>0?py[i+Nx*j]-py[i+Nx*(j-1)]:0;
+    dx = i>0&&i<Nx-1?px[i+Nx*j]-px[i-1+Nx*j]:i==0?px[i+Nx*j]:-px[i-1+Nx*j];
+    dy = j>0&&j<Ny-1?py[i+Nx*j]-py[i+Nx*(j-1)]:j==0?py[i+Nx*j]:-py[i+Nx*(j-1)];
 
     output[i+Nx*j] = dx+dy;
 }

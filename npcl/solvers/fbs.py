@@ -39,21 +39,22 @@ def solve_fbs(
         return cl_array.sum(x**2).get()
 
     x = x_0.copy()
-    dim = 1
-    for d in x.shape:
-        dim *= d
     k = 0
+    bnorm = norms(ATb)
     while True:
         k += 1
         v = x - delta*(ATA(x)-ATb)
         x_new = ProxR_solver(v, delta*mu)
         seq_diff = norms(x-x_new)
+        if np.isnan(seq_diff) or np.isinf(seq_diff):
+            print('something wrong with the problem setting...')
+            break
         if verbose is True:
             print(
                 'iteration number: ', k, ', sequential difference: ',
-                np.sqrt(seq_diff/dim),
+                np.sqrt(seq_diff/bnorm),
                 )
-        if seq_diff < dim*tol**2:
+        if seq_diff < bnorm*tol**2:
             break
         if k == max_iter:
             break

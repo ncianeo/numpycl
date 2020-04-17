@@ -45,9 +45,7 @@ def solve_fista(
     y = xold.copy()
     told = np.float32(1.)
     k = 0
-    dim = 1
-    for d in y.shape:
-        dim *= d
+    bnorm = norms(ATb)
 
     def p_L(x):
         return ProxR_solver(x-delta*(ATA(x)-ATb), mu*delta)
@@ -58,12 +56,13 @@ def solve_fista(
     if restarting:
         def restart(y, x, xold):
             return cl_array.sum((y-x)*(x-xold)).get() >= 0
+        restarted = False
 
     while True:
         k += 1
         x = p_L(y)
         t = (p+np.sqrt(q+r*told**2))/2
-        beta = np.float32((told-1)/t)
+        beta = np.float32(min((told-1)/t, 1))
         yold = y
         y = x + beta*(x-xold)
         seq_diff = norms(x-xold)
@@ -74,12 +73,19 @@ def solve_fista(
                 )
                 t = 1
                 y = x
+                if not restarted:
+                    xi = ((4+beta)/5.)**(1/30.)
+                    restarted = True
+                r *= xi
+        if np.isnan(seq_diff) or np.isinf(seq_diff):
+            print('something wrong with the problem setting...')
+            break
         if verbose is True:
             print(
                 'iteration number: ', k, ', sequential difference: ',
-                np.sqrt(seq_diff/dim),
+                np.sqrt(seq_diff/bnorm),
                 )
-        if seq_diff < dim*tol**2:
+        if seq_diff < bnorm*tol**2:
             break
         if k == max_iter:
             break
@@ -136,9 +142,7 @@ def solve_gfista(
     y = x.copy()
     delta0 = np.float32(delta*L_inv)
     k = 0
-    dim = 1
-    for d in x.shape:
-        dim *= d
+    bnorm = norms(ATb)
 
     def p_L(x, delta):
         return ProxR_solver(x-delta*(ATA(x)-ATb), mu*delta)
@@ -170,12 +174,15 @@ def solve_gfista(
                     'safeguard activated at iteration', k,
                     'delta now: ', delta,
                     )
+        if np.isnan(seq_diff) or np.isinf(seq_diff):
+            print('something wrong with the problem setting...')
+            break
         if verbose:
             print(
                 'iteration number: ', k, ', sequential difference: ',
-                np.sqrt(seq_diff/dim),
+                np.sqrt(seq_diff/bnorm),
                 )
-        if seq_diff < dim*tol**2:
+        if seq_diff < bnorm*tol**2:
             break
         if k == max_iter:
             break
