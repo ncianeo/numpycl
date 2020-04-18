@@ -26,6 +26,8 @@ def A(x):
 x_cg, k = npcl.solvers.cg.solve_cg(A, b_dev, x_init, tol=1e-5, verbose=True)
 
 print(
-    "numerical error (root squared error / l2 norm of x): ",
+    'numerical error (root squared error / l2 norm of x): ',
     np.sqrt(((x_cg.get()-vecx)**2).sum())/np.sqrt((vecx**2).sum()),
 )
+print('true solution: ', vecx[:100])
+print('numerical solution: ', x_cg.get()[:100])

@@ -45,7 +45,6 @@ def solve_fista(
     y = xold.copy()
     told = np.float32(1.)
     k = 0
-    bnorm = norms(ATb)
 
     def p_L(x):
         return ProxR_solver(x-delta*(ATA(x)-ATb), mu*delta)
@@ -57,6 +56,8 @@ def solve_fista(
         def restart(y, x, xold):
             return cl_array.sum((y-x)*(x-xold)).get() >= 0
         restarted = False
+
+    bnorm = norms(ATb)
 
     while True:
         k += 1
@@ -142,7 +143,6 @@ def solve_gfista(
     y = x.copy()
     delta0 = np.float32(delta*L_inv)
     k = 0
-    bnorm = norms(ATb)
 
     def p_L(x, delta):
         return ProxR_solver(x-delta*(ATA(x)-ATb), mu*delta)
@@ -152,6 +152,8 @@ def solve_gfista(
 
     def restart(y, x, xold):
         return cl_array.sum((y-x)*(x-xold)).get() >= 0
+
+    bnorm = norms(ATb)
 
     while True:
         k += 1

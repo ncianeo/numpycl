@@ -42,7 +42,7 @@ def AT(x):
 start = time()
 
 x_flb, k = npcl.solvers.flb.solve_flb(
-    A, AT, b_dev, stuck=1e-1, tol=1e-7,
+    A, AT, b_dev, stuck=1e-1, tol=1e-6,
     verbose=True, max_iter=50000,
     )
 
@@ -51,3 +51,5 @@ print(
     "numerical error (absolute error / l1 norm of x): ",
     np.abs(x_flb.get()-vecx).sum()/np.abs(vecx).sum(),
 )
+print('true solution: ', vecx[:100])
+print('numerical solution: ', x_flb.get()[:100])
