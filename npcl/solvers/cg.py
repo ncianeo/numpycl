@@ -1,8 +1,10 @@
-import pyopencl.array as cl_array
+import npcl
 import numpy as np
 
 
-def solve_cg(A, b, x_0, tol=np.float32(1e-3), max_iter=None, verbose=False):
+def solve_cg(
+        A, b, x_0, tol=np.float32(1e-3), max_iter=None, verbose=False,
+        ):
     """
     Conjugate Gradient Method.
 
@@ -28,19 +30,20 @@ def solve_cg(A, b, x_0, tol=np.float32(1e-3), max_iter=None, verbose=False):
     dim = 1
     for d in x.shape:
         dim *= d
-    rsold = cl_array.sum(r**2).get()
+    bnorm = npcl.sum(b**2).get()
+    rsold = npcl.sum(r**2).get()
     for k in range(dim):
         Ap = A(p)
-        alpha = np.float32(rsold/cl_array.sum(p*Ap).get())
+        alpha = np.float32(rsold/npcl.sum(p*Ap).get())
         x += alpha*p
         r += -alpha*Ap
-        rsnew = cl_array.sum(r**2).get()
+        rsnew = npcl.sum(r**2).get()
         if verbose is True:
             print(
                 'iteration number: ', k+1,
-                ', residual: ', np.sqrt(rsnew/dim),
+                ', residual: ', np.sqrt(rsnew/bnorm),
                 )
-        if rsnew < dim*tol**2:
+        if rsnew < bnorm*tol**2:
             break
         if max_iter is not None:
             if k+1 == max_iter:

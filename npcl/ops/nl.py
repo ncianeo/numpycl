@@ -1,6 +1,6 @@
 from os.path import abspath
 import pyopencl as cl
-import pyopencl.array as cl_array
+import npcl
 import numpy as np
 
 
@@ -10,7 +10,7 @@ prg = None
 def build(parameter):
     if type(parameter) == cl.Context:
         ctx = parameter
-    if type(parameter) == cl_array.Array:
+    if type(parameter) == npcl.Array:
         ctx = parameter.context
     global prg
     kernel_fp = abspath(__file__).replace('.py', '.cl')

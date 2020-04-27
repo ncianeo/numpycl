@@ -1,4 +1,4 @@
-import pyopencl.array as cl_array
+import npcl
 import numpy as np
 
 
@@ -36,7 +36,7 @@ def solve_fbs(
     """
 
     def norms(x):
-        return cl_array.sum(x**2).get()
+        return npcl.sum(x**2).get()
 
     x = x_0.copy()
     k = 0

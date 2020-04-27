@@ -48,7 +48,7 @@ x_flb, k = npcl.solvers.flb.solve_flb(
 
 print('elapsed time: ', time()-start)
 print(
-    "numerical error (absolute error / l1 norm of x): ",
+    'numerical error (absolute error / l1 norm of x): ',
     np.abs(x_flb.get()-vecx).sum()/np.abs(vecx).sum(),
 )
 print('true solution: ', vecx[:100])

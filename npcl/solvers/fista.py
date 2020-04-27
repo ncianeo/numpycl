@@ -1,4 +1,4 @@
-import pyopencl.array as cl_array
+import npcl
 import numpy as np
 
 
@@ -50,11 +50,11 @@ def solve_fista(
         return ProxR_solver(x-delta*(ATA(x)-ATb), mu*delta)
 
     def norms(x):
-        return cl_array.sum(x**2).get()
+        return npcl.sum(x**2).get()
 
     if restarting:
         def restart(y, x, xold):
-            return cl_array.sum((y-x)*(x-xold)).get() >= 0
+            return npcl.sum((y-x)*(x-xold)).get() >= 0
         restarted = False
 
     bnorm = norms(ATb)
@@ -148,10 +148,10 @@ def solve_gfista(
         return ProxR_solver(x-delta*(ATA(x)-ATb), mu*delta)
 
     def norms(x):
-        return cl_array.sum(x**2).get()
+        return npcl.sum(x**2).get()
 
     def restart(y, x, xold):
-        return cl_array.sum((y-x)*(x-xold)).get() >= 0
+        return npcl.sum((y-x)*(x-xold)).get() >= 0
 
     bnorm = norms(ATb)
 

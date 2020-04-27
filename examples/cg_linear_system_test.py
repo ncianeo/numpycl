@@ -18,10 +18,14 @@ x_init = to_device(np.zeros_like(vecx))
 
 res = to_device(np.empty_like(vecb))
 
+
 def A(x):
     buf = res.copy()
-    pyclblast.gemv(npcl.queue, m, n, A_dev, x, buf, a_ld=n, alpha=1.0, beta=0.0)
+    pyclblast.gemv(
+        npcl.queue, m, n, A_dev, x, buf, a_ld=n, alpha=1.0, beta=0.0,
+        )
     return buf
+
 
 x_cg, k = npcl.solvers.cg.solve_cg(A, b_dev, x_init, tol=1e-5, verbose=True)
 

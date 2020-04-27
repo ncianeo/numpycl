@@ -1,4 +1,4 @@
-import pyopencl.array as cl_array
+import npcl
 import numpy as np
 from npcl.ops.local import grad2d, norm2d, divergence2d
 
@@ -8,10 +8,9 @@ def denoise_tv(image, weight=0.1, eps=2.e-4, n_iter_max=100):
     ndim = 2
     weight = np.float32(weight)
     eps = np.float32(eps)
-    queue = img_dev.queue
-    px = cl_array.zeros(queue, image.shape, dtype=np.float32)
-    py = cl_array.zeros(queue, image.shape, dtype=np.float32)
-    d = cl_array.zeros(queue, img_dev.shape, dtype=np.float32)
+    px = npcl.zeros_like(image)
+    py = npcl.zeros_like(image)
+    d = npcl.zeros_like(image)
     tau = np.float32(1/(2.*ndim))
     N = np.float32(img_dev.shape[0]*img_dev.shape[1])
     i = 0
@@ -23,11 +22,11 @@ def denoise_tv(image, weight=0.1, eps=2.e-4, n_iter_max=100):
             out = img_dev + d
         else:
             out = img_dev
-        E = cl_array.sum((d ** 2)).get()
+        E = npcl.sum((d ** 2)).get()
         # (gx, gy) stores the gradients of out along each axis
         gx, gy = grad2d(out)
         norm = norm2d(gx, gy)
-        E += weight*cl_array.sum(norm).get()
+        E += weight*npcl.sum(norm).get()
         norm *= tau/weight
         norm += np.float32(1)
         px = px-tau*gx

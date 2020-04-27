@@ -1,6 +1,6 @@
 from os.path import abspath
 import pyopencl as cl
-import pyopencl.array as cl_array
+import npcl
 import numpy as np
 
 
@@ -10,7 +10,7 @@ prg = None
 def build(parameter):
     if type(parameter) == cl.Context:
         ctx = parameter
-    if type(parameter) == cl_array.Array:
+    if type(parameter) == npcl.Array:
         ctx = parameter.context
     global prg
     kernel_fp = abspath(__file__).replace('.py', '.cl')
@@ -42,7 +42,7 @@ def convolve2d(x, k, padding='zero'):
     elif padding == 'wrap':
         run_kernel = prg.convolve2d_w
     queue = x.queue
-    res = cl_array.empty(queue, x.shape, np.float32)
+    res = npcl.zeros_like(x)
     run_kernel(
         queue, x.shape, None,
         x.data, k.data, res.data,
@@ -77,7 +77,7 @@ def convolve2d_sv(x, k, padding='zero'):
     elif padding == 'wrap':
         run_kernel = prg.convolve2d_sv_w
     queue = x.queue
-    res = cl_array.empty(queue, x.shape, np.float32)
+    res = npcl.zeros_like(x)
     run_kernel(
         queue, x.shape, None,
         x.data, k.data, res.data,
@@ -91,7 +91,7 @@ def transpose2d(k):
     if prg is None:
         build(k)
     queue = k.queue
-    kernel = cl_array.empty_like(k)
+    kernel = npcl.empty_like(k)
     prg.transpose2d(
         queue, k.shape, None,
         k.data, kernel.data,
@@ -103,7 +103,7 @@ def transpose2d_sv(k):
     if prg is None:
         build(k)
     queue = k.queue
-    kernel = cl_array.empty_like(k)
+    kernel = npcl.empty_like(k)
     prg.transpose2d_sv(
         queue, k.shape[2:], None,
         k.data, kernel.data,

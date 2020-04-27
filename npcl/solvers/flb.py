@@ -1,5 +1,4 @@
-import pyopencl.array as cl_array
-import pyopencl.clmath as cl_math
+import npcl
 from npcl.ops.local import sign, soft_shrink
 import numpy as np
 
@@ -39,9 +38,9 @@ def solve_flb(
         return AT(A(x))
 
     def norm(x):
-        return cl_array.sum(cl_math.fabs(x)).get()
+        return npcl.sum(npcl.fabs(x)).get()
 
-    x = cl_array.zeros_like(ATb)
+    x = npcl.zeros_like(ATb)
     v = x.copy()
     normb = norm(b)
     kick_test = [0 for i in range(5)]
@@ -59,7 +58,7 @@ def solve_flb(
             I_0 = (x_new == 0.).astype(np.float32)
             r = ATb-ATA(x_new)
             s = ((mu*sign(r)-v)/r).astype(np.int32)*I_0
-            smin = np.float32(cl_array.min(s + 1e7*(1-I_0)).get())
+            smin = np.float32(npcl.min(s + 1e7*(1-I_0)).get())
             if smin <= 2:
                 v += r
             else:
