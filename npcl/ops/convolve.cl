@@ -1,4 +1,4 @@
-inline wrap(int x, int w){
+inline int wrap(int x, int w){
     int res = x % w;
     return res<0?res+w:res;
 }
