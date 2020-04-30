@@ -12,10 +12,23 @@ def build(parameter):
         ctx = parameter
     if type(parameter) == npcl.Array:
         ctx = parameter.context
-    global prg
+    global prg, local_mem_size, TS
     kernel_fp = abspath(__file__).replace('.py', '.cl')
     prg = cl.Program(ctx, open(kernel_fp, 'r').read())
     prg.build()
+    local_mem_size = npcl.get_local_mem_size() / 4
+    TS = np.int32(np.sqrt(npcl.get_max_work_group_size()))
+
+
+def use_local_mem(filter_size):
+    if filter_size[0] > TS:
+        return False
+    elif filter_size[1] > TS:
+        return False
+    elif (TS+filter_size[0]-1)*(TS+filter_size[1]-1) > local_mem_size:
+        return False
+    else:
+        return True
 
 
 def convolve2d(x, k, padding='zero'):
@@ -35,20 +48,37 @@ def convolve2d(x, k, padding='zero'):
     """
     if prg is None:
         build(x)
-    if padding == 'zero':
-        run_kernel = prg.convolve2d_z
-    elif padding == 'same':
-        run_kernel = prg.convolve2d_s
-    elif padding == 'wrap':
-        run_kernel = prg.convolve2d_w
-    queue = x.queue
-    res = npcl.zeros_like(x)
-    run_kernel(
-        queue, x.shape, None,
-        x.data, k.data, res.data,
-        np.int32(k.shape[0]),
-        np.int32(k.shape[1]),
-        )
+    if use_local_mem(k.shape):
+        if padding == 'zero':
+            run_kernel = prg.convolve2d_loc_z
+        elif padding == 'same':
+            run_kernel = prg.convolve2d_loc_s
+        elif padding == 'wrap':
+            run_kernel = prg.convolve2d_loc_w
+        queue = x.queue
+        res = npcl.zeros_like(x)
+        cache_size = 4*(TS+k.shape[0]-1)*(TS+k.shape[1]-1)
+        run_kernel(
+            queue, x.shape, (TS, TS),
+            x.data, k.data, cl.LocalMemory(cache_size), res.data,
+            np.int32(k.shape[0]),
+            np.int32(k.shape[1]),
+            )
+    else:
+        if padding == 'zero':
+            run_kernel = prg.convolve2d_z
+        elif padding == 'same':
+            run_kernel = prg.convolve2d_s
+        elif padding == 'wrap':
+            run_kernel = prg.convolve2d_w
+        queue = x.queue
+        res = npcl.zeros_like(x)
+        run_kernel(
+            queue, x.shape, None,
+            x.data, k.data, res.data,
+            np.int32(k.shape[0]),
+            np.int32(k.shape[1]),
+            )
     return res
 
 

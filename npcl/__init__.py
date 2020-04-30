@@ -46,6 +46,20 @@ def empty_like(x):
     return cl_array.empty_like(x)
 
 
+def get_local_mem_size(dev_id=0):
+    if ctx is None:
+        create_ctx_queue()
+    dev = ctx.devices[dev_id]
+    return  dev.get_info(cl.device_info.LOCAL_MEM_SIZE)
+
+
+def get_max_work_group_size(dev_id=0):
+    if ctx is None:
+        create_ctx_queue()
+    dev = ctx.devices[dev_id]
+    return dev.get_info(cl.device_info.MAX_WORK_GROUP_SIZE)
+
+
 Array = cl_array.Array
 
 
