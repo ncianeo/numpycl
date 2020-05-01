@@ -23,7 +23,7 @@ cv2.waitKey(0)
 cv2.destroyAllWindows()
 
 deblurred, iter = npcl.solvers.deconv.deconv_fista(
-    blurry, kernel, mu=1.0, delta=1.0, tol=1e-4,
+    blurry, kernel, mu=1.0, delta=1.0, tol=5e-5,
     max_iter=1000, verbose=True,
 )
 

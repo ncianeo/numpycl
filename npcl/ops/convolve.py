@@ -57,10 +57,16 @@ def convolve2d(x, k, padding='zero'):
             run_kernel = prg.convolve2d_loc_w
         queue = x.queue
         res = npcl.zeros_like(x)
-        cache_size = 4*(TS+k.shape[0]-1)*(TS+k.shape[1]-1)
+        padded_shape = (
+            x.shape[0]+(-x.shape[0]) % TS,
+            x.shape[1]+(-x.shape[1]) % TS,
+            )
+        cache_size = 4*(TS+2*(k.shape[0]//2))*(TS+2*(k.shape[1]//2))
         run_kernel(
-            queue, x.shape, (TS, TS),
+            queue, padded_shape, (TS, TS),
             x.data, k.data, cl.LocalMemory(cache_size), res.data,
+            np.int32(x.shape[0]),
+            np.int32(x.shape[1]),
             np.int32(k.shape[0]),
             np.int32(k.shape[1]),
             )

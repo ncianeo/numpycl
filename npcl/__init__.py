@@ -50,7 +50,7 @@ def get_local_mem_size(dev_id=0):
     if ctx is None:
         create_ctx_queue()
     dev = ctx.devices[dev_id]
-    return  dev.get_info(cl.device_info.LOCAL_MEM_SIZE)
+    return dev.get_info(cl.device_info.LOCAL_MEM_SIZE)
 
 
 def get_max_work_group_size(dev_id=0):
