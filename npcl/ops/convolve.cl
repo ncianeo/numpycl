@@ -130,14 +130,13 @@ __kernel void convolve2d_loc_z(
     __global const float *h,
     __local float *P,
     __global float *output,
+    const int Nx,
+    const int Ny,
     const int FSX,
     const int FSY
     ){
     int i_g = get_global_id(0);
     int j_g = get_global_id(1);
-    
-    int Nx = get_global_size(0);
-    int Ny = get_global_size(1);
     
     int i_loc = get_local_id(0);
     int j_loc = get_local_id(1);
@@ -148,47 +147,52 @@ __kernel void convolve2d_loc_z(
     int PSY = 2 * HFSY;
     int TS = get_local_size(0);
     
-    P[i_loc + HFSX + (TS+PSX)*(j_loc + HFSY)] = input[i_g + Nx * j_g];
-    
-    // This padding is valid only if FSX < TS and FSY < TS
-    int xoffset = 0;
-    int yoffset = 0;
-    if (i_loc < HFSX){
-        xoffset = -min(i_g, HFSX);
-    }
-    if (i_loc >= TS-HFSX){
-        xoffset = min(HFSX, Nx-1-i_g);
-    }
-    if (j_loc < HFSX){
-        yoffset = -min(j_g, HFSY);
-    }
-    if (j_loc >= TS-HFSX){
-        yoffset = min(HFSY, Ny-1-j_g);
-    }
-    if (xoffset!=0){
-        P[i_loc + HFSX + xoffset + (TS+PSX)*(j_loc + HFSY)] = input[i_g + xoffset + Nx * j_g];
-    }
-    if (yoffset!=0){
-        P[i_loc + HFSX + (TS+PSX)*(j_loc + HFSY + yoffset)] = input[i_g + Nx * (j_g + yoffset)];
-    }
-    if (xoffset!=0 && yoffset!=0){
-        P[i_loc + HFSX + xoffset + (TS+PSX)*(j_loc + HFSY + yoffset)] = input[i_g + xoffset + Nx * (j_g + yoffset)];
-    }
-    
-    barrier(CLK_LOCAL_MEM_FENCE);
-    
-    float sum = 0.0;
-    int i_ref, j_ref;
-    #pragma unroll
-    for (int dx = max(-HFSX, -i_g); dx <= min(HFSX, Nx-1-i_g); dx++){
-        i_ref = i_loc + HFSX + dx;
-        #pragma unroll
-        for (int dy = max(-HFSY, -j_g); dy <= min(HFSY, Ny-1-j_g); dy++){
-            j_ref = j_loc + HFSY + dy;
-            sum += P[i_ref + (TS+PSX)*j_ref] * h[dx + HFSX + FSX * (dy + HFSY)];
+    if (i_g < Nx && j_g < Ny){
+        P[i_loc + HFSX + (TS+PSX)*(j_loc + HFSY)] = input[i_g + Nx * j_g];
+        
+        // This padding is valid only if FSX < TS and FSY < TS
+        int xoffset = 0;
+        int yoffset = 0;
+        if (i_loc < HFSX){
+            xoffset = -min(i_g, HFSX);
         }
+        if (i_loc >= TS-HFSX){
+            xoffset = min(HFSX, Nx-1-i_g);
+        }
+        if (j_loc < HFSY){
+            yoffset = -min(j_g, HFSY);
+        }
+        if (j_loc >= TS-HFSY){
+            yoffset = min(HFSY, Ny-1-j_g);
+        }
+        if (xoffset!=0){
+            P[i_loc + HFSX + xoffset + (TS+PSX)*(j_loc + HFSY)] = input[i_g + xoffset + Nx * j_g];
+        }
+        if (yoffset!=0){
+            P[i_loc + HFSX + (TS+PSX)*(j_loc + HFSY + yoffset)] = input[i_g + Nx * (j_g + yoffset)];
+        }
+        if (xoffset!=0 && yoffset!=0){
+            P[i_loc + HFSX + xoffset + (TS+PSX)*(j_loc + HFSY + yoffset)] = input[i_g + xoffset + Nx * (j_g + yoffset)];
+        }
+        
+        barrier(CLK_LOCAL_MEM_FENCE);
+        
+        float sum = 0.0;
+        int i_ref, j_ref;
+        #pragma unroll
+        for (int dx = max(-HFSX, -i_g); dx <= min(HFSX, Nx-1-i_g); dx++){
+            i_ref = i_loc + HFSX + dx;
+            #pragma unroll
+            for (int dy = max(-HFSY, -j_g); dy <= min(HFSY, Ny-1-j_g); dy++){
+                j_ref = j_loc + HFSY + dy;
+                sum += P[i_ref + (TS+PSX)*j_ref] * h[dx + HFSX + FSX * (dy + HFSY)];
+            }
+        }
+        output[i_g + Nx * j_g] = sum;
     }
-    output[i_g + Nx * j_g] = sum;
+    else{
+        return;
+    }
 }
 
 
@@ -197,14 +201,13 @@ __kernel void convolve2d_loc_s(
     __global const float *h,
     __local float *P,
     __global float *output,
+    const int Nx,
+    const int Ny,
     const int FSX,
     const int FSY
     ){
     int i_g = get_global_id(0);
     int j_g = get_global_id(1);
-    
-    int Nx = get_global_size(0);
-    int Ny = get_global_size(1);
     
     int i_loc = get_local_id(0);
     int j_loc = get_local_id(1);
@@ -215,50 +218,55 @@ __kernel void convolve2d_loc_s(
     int PSY = 2 * HFSY;
     int TS = get_local_size(0);
     
-    P[i_loc + HFSX + (TS+PSX)*(j_loc + HFSY)] = input[i_g + Nx * j_g];
-    
-    // This padding is valid only if FSX < TS and FSY < TS
-    int xoffset = 0;
-    int yoffset = 0;
-    if (i_loc < HFSX){
-        xoffset = -HFSX;
-    }
-    if (i_loc >= TS-HFSX){
-        xoffset = HFSX;
-    }
-    if (j_loc < HFSX){
-        yoffset = -HFSY;
-    }
-    if (j_loc >= TS-HFSX){
-        yoffset = HFSY;
-    }
-    if (xoffset!=0){
-        P[i_loc + HFSX + xoffset + (TS+PSX)*(j_loc + HFSY)] =
-            input[clamp(i_g + xoffset, 0, Nx-1) + xoffset + Nx * j_g];
-    }
-    if (yoffset!=0){
-        P[i_loc + HFSX + (TS+PSX)*(j_loc + HFSY + yoffset)] = 
-            input[i_g + Nx * clamp(j_g + yoffset, 0, Ny-1)];
-    }
-    if (xoffset!=0 && yoffset!=0){
-        P[i_loc + HFSX + xoffset + (TS+PSX)*(j_loc + HFSY + yoffset)] = 
-            input[clamp(i_g + xoffset, 0, Nx-1) + Nx * clamp(j_g + yoffset, 0, Ny-1)];
-    }
-    
-    barrier(CLK_LOCAL_MEM_FENCE);
-    
-    float sum = 0.0;
-    int i_ref, j_ref;
-    #pragma unroll
-    for (int dx = -HFSX; dx <= HFSX; dx++){
-        i_ref = i_loc + HFSX + dx;
-        #pragma unroll
-        for (int dy = -HFSY; dy <= HFSY; dy++){
-            j_ref = j_loc + HFSY + dy;
-            sum += P[i_ref + (TS+PSX)*j_ref] * h[dx + HFSX + FSX * (dy + HFSY)];
+    if (i_g < Nx && j_g < Ny){
+        P[i_loc + HFSX + (TS+PSX)*(j_loc + HFSY)] = input[i_g + Nx * j_g];
+        
+        // This padding is valid only if FSX < TS and FSY < TS
+        int xoffset = 0;
+        int yoffset = 0;
+        if (i_loc < HFSX){
+            xoffset = -HFSX;
         }
+        if (i_loc >= TS-HFSX){
+            xoffset = HFSX;
+        }
+        if (j_loc < HFSY){
+            yoffset = -HFSY;
+        }
+        if (j_loc >= TS-HFSY){
+            yoffset = HFSY;
+        }
+        if (xoffset!=0){
+            P[i_loc + HFSX + xoffset + (TS+PSX)*(j_loc + HFSY)] =
+                input[clamp(i_g + xoffset, 0, Nx-1) + xoffset + Nx * j_g];
+        }
+        if (yoffset!=0){
+            P[i_loc + HFSX + (TS+PSX)*(j_loc + HFSY + yoffset)] = 
+                input[i_g + Nx * clamp(j_g + yoffset, 0, Ny-1)];
+        }
+        if (xoffset!=0 && yoffset!=0){
+            P[i_loc + HFSX + xoffset + (TS+PSX)*(j_loc + HFSY + yoffset)] = 
+                input[clamp(i_g + xoffset, 0, Nx-1) + Nx * clamp(j_g + yoffset, 0, Ny-1)];
+        }
+        
+        barrier(CLK_LOCAL_MEM_FENCE);
+        
+        float sum = 0.0;
+        int i_ref, j_ref;
+        #pragma unroll
+        for (int dx = -HFSX; dx <= HFSX; dx++){
+            i_ref = i_loc + HFSX + dx;
+            #pragma unroll
+            for (int dy = -HFSY; dy <= HFSY; dy++){
+                j_ref = j_loc + HFSY + dy;
+                sum += P[i_ref + (TS+PSX)*j_ref] * h[dx + HFSX + FSX * (dy + HFSY)];
+            }
+        }
+        output[i_g + Nx * j_g] = sum;
     }
-    output[i_g + Nx * j_g] = sum;
+    else{
+        return;
+    }
 }
 
 
@@ -267,14 +275,13 @@ __kernel void convolve2d_loc_w(
     __global const float *h,
     __local float *P,
     __global float *output,
+    const int Nx,
+    const int Ny,
     const int FSX,
     const int FSY
     ){
     int i_g = get_global_id(0);
     int j_g = get_global_id(1);
-    
-    int Nx = get_global_size(0);
-    int Ny = get_global_size(1);
     
     int i_loc = get_local_id(0);
     int j_loc = get_local_id(1);
@@ -285,78 +292,83 @@ __kernel void convolve2d_loc_w(
     int PSY = 2 * HFSY;
     int TS = get_local_size(0);
     
-    P[i_loc + HFSX + (TS+PSX)*(j_loc + HFSY)] = input[i_g + Nx * j_g];
-    
-    // This padding is valid only if FSX < TS and FSY < TS
-    int xoffset = 0;
-    int yoffset = 0;
-    if (i_loc < HFSX){
-        xoffset = -HFSX;
-    }
-    if (i_loc >= TS-HFSX){
-        xoffset = HFSX;
-    }
-    if (j_loc < HFSX){
-        yoffset = -HFSY;
-    }
-    if (j_loc >= TS-HFSX){
-        yoffset = HFSY;
-    }
-    if (xoffset!=0){
-        P[i_loc + HFSX + xoffset + (TS+PSX)*(j_loc + HFSY)] =
-            input[wrap(i_g + xoffset, Nx) + xoffset + Nx * j_g];
-    }
-    if (yoffset!=0){
-        P[i_loc + HFSX + (TS+PSX)*(j_loc + HFSY + yoffset)] = 
-            input[i_g + Nx * wrap(j_g + yoffset, Ny)];
-    }
-    if (xoffset!=0 && yoffset!=0){
-        P[i_loc + HFSX + xoffset + (TS+PSX)*(j_loc + HFSY + yoffset)] = 
-            input[wrap(i_g + xoffset, Nx) + Nx * wrap(j_g + yoffset, Ny)];
-    }
-    
-    barrier(CLK_LOCAL_MEM_FENCE);
-    
-    float sum = 0.0;
-    int i_ref, j_ref;
-    #pragma unroll
-    for (int dx = -HFSX; dx <= HFSX; dx++){
-        i_ref = i_loc + HFSX + dx;
-        #pragma unroll
-        for (int dy = -HFSY; dy <= HFSY; dy++){
-            j_ref = j_loc + HFSY + dy;
-            sum += P[i_ref + (TS+PSX)*j_ref] * h[dx + HFSX + FSX * (dy + HFSY)];
+    if (i_g < Nx && j_g < Ny){
+        P[i_loc + HFSX + (TS+PSX)*(j_loc + HFSY)] = input[i_g + Nx * j_g];
+        
+        // This padding is valid only if FSX < TS and FSY < TS
+        int xoffset = 0;
+        int yoffset = 0;
+        if (i_loc < HFSX){
+            xoffset = -HFSX;
         }
+        if (i_loc >= TS-HFSX){
+            xoffset = HFSX;
+        }
+        if (j_loc < HFSY){
+            yoffset = -HFSY;
+        }
+        if (j_loc >= TS-HFSY){
+            yoffset = HFSY;
+        }
+        if (xoffset!=0){
+            P[i_loc + HFSX + xoffset + (TS+PSX)*(j_loc + HFSY)] =
+                input[wrap(i_g + xoffset, Nx) + xoffset + Nx * j_g];
+        }
+        if (yoffset!=0){
+            P[i_loc + HFSX + (TS+PSX)*(j_loc + HFSY + yoffset)] =
+                input[i_g + Nx * wrap(j_g + yoffset, Ny)];
+        }
+        if (xoffset!=0 && yoffset!=0){
+            P[i_loc + HFSX + xoffset + (TS+PSX)*(j_loc + HFSY + yoffset)] =
+                input[wrap(i_g + xoffset, Nx) + Nx * wrap(j_g + yoffset, Ny)];
+        }
+        
+        barrier(CLK_LOCAL_MEM_FENCE);
+        
+        float sum = 0.0;
+        int i_ref, j_ref;
+        #pragma unroll
+        for (int dx = -HFSX; dx <= HFSX; dx++){
+            i_ref = i_loc + HFSX + dx;
+            #pragma unroll
+            for (int dy = -HFSY; dy <= HFSY; dy++){
+                j_ref = j_loc + HFSY + dy;
+                sum += P[i_ref + (TS+PSX)*j_ref] * h[dx + HFSX + FSX * (dy + HFSY)];
+            }
+        }
+        output[i_g + Nx * j_g] = sum;
     }
-    output[i_g + Nx * j_g] = sum;
+    else{
+        return;
+    }
 }
 
 
-__kernel void convolve2d_sv_w(
-    __global const float *input,
-    __global const float *h,
-    __global float *output,
-    const int Nhx,
-    const int Nhy
-    ){
-    int i = get_global_id(0);
-    int j = get_global_id(1);
-    int Nx = get_global_size(0);
-    int Ny = get_global_size(1);
+    __kernel void convolve2d_sv_w(
+        __global const float *input,
+        __global const float *h,
+        __global float *output,
+        const int Nhx,
+        const int Nhy
+        ){
+        int i = get_global_id(0);
+        int j = get_global_id(1);
+        int Nx = get_global_size(0);
+        int Ny = get_global_size(1);
 
-    float res = 0.f;
-    uint ref_i, ref_j;
+        float res = 0.f;
+        uint ref_i, ref_j;
 
-    #pragma unroll
-    for(int dx = -Nhx/2; dx <= Nhx/2; ++dx){
-        ref_i = wrap(i+dx, Nx);
         #pragma unroll
-        for(int dy = -Nhy/2; dy <= Nhy/2; ++dy){
-            ref_j = wrap(j+dy, Ny);
-            res += h[Nx*Ny*(Nhx/2+dx + Nhx*(Nhy/2 + dy))+i+Nx*j]*input[ref_i+ref_j*Nx];
+        for(int dx = -Nhx/2; dx <= Nhx/2; ++dx){
+            ref_i = wrap(i+dx, Nx);
+            #pragma unroll
+            for(int dy = -Nhy/2; dy <= Nhy/2; ++dy){
+                ref_j = wrap(j+dy, Ny);
+                res += h[Nx*Ny*(Nhx/2+dx + Nhx*(Nhy/2 + dy))+i+Nx*j]*input[ref_i+ref_j*Nx];
+            }
         }
-    }
-    output[i+Nx*j] = res;
+        output[i+Nx*j] = res;
 }
 
 

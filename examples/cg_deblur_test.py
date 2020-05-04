@@ -10,7 +10,7 @@ img = cv2.imread('lake.tif', 0)/255
 img = to_device(img)
 
 # 5 x 5 box kernel
-kernel = np.ones((5, 5))/25.
+kernel = np.ones((7, 7))/49.
 kernel = to_device(kernel)
 
 blurry = convolve(img, kernel)
@@ -27,7 +27,7 @@ def A(x):
 
 start_time = time()
 deblurred, iters = npcl.solvers.cg.solve_cg(
-    A, blurry, x_0, tol=5e-4,
+    A, blurry, x_0, tol=1e-4,
     verbose=True,
     )
 

@@ -43,7 +43,7 @@ start_time = time()
 
 x_flb, k = npcl.solvers.flb.solve_flb(
     A, AT, b_dev, stuck=1e-1, tol=1e-6,
-    verbose=True, max_iter=50000,
+    verbose=True, max_iter=10000,
     )
 
 print('time elapsed:', time()-start_time)
