@@ -2,6 +2,7 @@ import npcl
 from npcl import to_device
 import numpy as np
 import cv2
+from time import time
 
 convolve = npcl.ops.convolve.convolve2d
 
@@ -24,11 +25,13 @@ def A(x):
     return convolve(x, kernel)
 
 
+start_time = time()
 deblurred, iters = npcl.solvers.cg.solve_cg(
     A, blurry, x_0, tol=5e-4,
     verbose=True,
     )
 
+print('time elapsed:', time()-start_time)
 cv2.imshow('deblurred', np.clip(255*deblurred.get(), 0, 255).astype(np.uint8))
 cv2.waitKey(0)
 cv2.destroyAllWindows()

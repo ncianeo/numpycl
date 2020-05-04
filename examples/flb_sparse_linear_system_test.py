@@ -39,14 +39,14 @@ def AT(x):
     return res
 
 
-start = time()
+start_time = time()
 
 x_flb, k = npcl.solvers.flb.solve_flb(
     A, AT, b_dev, stuck=1e-1, tol=1e-6,
     verbose=True, max_iter=50000,
     )
 
-print('elapsed time: ', time()-start)
+print('time elapsed:', time()-start_time)
 print(
     'numerical error (absolute error / l1 norm of x): ',
     np.abs(x_flb.get()-vecx).sum()/np.abs(vecx).sum(),

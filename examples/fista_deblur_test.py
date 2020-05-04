@@ -2,6 +2,7 @@ import npcl
 from npcl import to_device
 import numpy as np
 import cv2
+from time import time
 
 convolve = npcl.ops.convolve.convolve2d
 
@@ -22,11 +23,13 @@ cv2.imshow('blurry', np.clip(blurry.get(), 0, 255).astype(np.uint8))
 cv2.waitKey(0)
 cv2.destroyAllWindows()
 
+start_time = time()
 deblurred, iter = npcl.solvers.deconv.deconv_fista(
     blurry, kernel, mu=1.0, delta=1.0, tol=1e-4,
     max_iter=1000, verbose=True,
 )
 
+print('time elapsed:', time()-start_time)
 cv2.imshow('deblurred', np.clip(deblurred.get(), 0, 255).astype(np.uint8))
 cv2.waitKey(0)
 cv2.destroyAllWindows()
