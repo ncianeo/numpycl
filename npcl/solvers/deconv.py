@@ -8,7 +8,7 @@ from .fista import solve_fista
 
 def deconv_fbs(
         img_blurry, psf, kernel=None, denoiser=denoise_tv,
-        mu=np.float32(1e-3), tol=np.float32(1e-3), delta=np.float32(0.9),
+        mu=np.float32(1e-3), tol=np.float32(1e-4), delta=np.float32(1.5),
         max_iter=50, verbose=False,
         ):
     """
@@ -35,7 +35,7 @@ def deconv_fbs(
 
 def deconv_fista(
         img_blurry, psf, kernel=None, denoiser=denoise_tv,
-        mu=np.float32(1e-3), tol=np.float32(1e-3), delta=np.float32(0.9),
+        mu=np.float32(1e-3), tol=np.float32(1e-4), delta=np.float32(1.5),
         max_iter=50, verbose=False,
         ):
     """
@@ -60,9 +60,9 @@ def deconv_fista(
     return x, k
 
 
-def deconv_sv_fbstv(
-        img_blurry, psf, kernel=None,
-        mu=np.float32(1e-3), tol=np.float32(1e-3), delta=np.float32(0.9),
+def deconv_sv_fbs(
+        img_blurry, psf, kernel=None, denoiser=denoise_tv,
+        mu=np.float32(1e-3), tol=np.float32(1e-4), delta=np.float32(1.5),
         max_iter=50, verbose=False,
         ):
     x_0 = img_blurry.copy()
@@ -75,7 +75,7 @@ def deconv_sv_fbstv(
 
     def ATA(x):
         return convolve2d_sv(convolve2d_sv(x, kernel), psf)
-    ProxR = denoise_tv
+    ProxR = denoiser
 
     x, k = solve_fbs(
         ATA, ATb, x_0, ProxR,

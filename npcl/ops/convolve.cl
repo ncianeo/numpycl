@@ -365,7 +365,7 @@ __kernel void convolve2d_loc_w(
             #pragma unroll
             for(int dy = -Nhy/2; dy <= Nhy/2; ++dy){
                 ref_j = wrap(j+dy, Ny);
-                res += h[Nx*Ny*(Nhx/2+dx + Nhx*(Nhy/2 + dy))+i+Nx*j]*input[ref_i+ref_j*Nx];
+                res += h[Nx*Ny*(Nhx/2+dx + Nhx*(Nhy/2 + dy))+i+Nx*j]*input[ref_i + Nx * ref_j];
             }
         }
         output[i+Nx*j] = res;
@@ -393,7 +393,7 @@ __kernel void convolve2d_sv_s(
         #pragma unroll
         for(int dy = -Nhy/2; dy <= Nhy/2; ++dy){
             ref_j = clamp(j+dy, 0, Ny-1);
-            res += h[Nx*Ny*(Nhx/2+dx + Nhx*(Nhy/2 + dy))+i+Nx*j]*input[ref_i+ref_j*Nx];
+            res += h[Nx*Ny*(Nhx/2+dx + Nhx*(Nhy/2 + dy))+i+Nx*j]*input[ref_i + Nx * ref_j];
         }
     }
     output[i+Nx*j] = res;
@@ -421,7 +421,7 @@ __kernel void convolve2d_sv_z(
         #pragma unroll
         for(int dy = max(-Nhy/2, -j); dy <= min(Nhy/2, Ny-1-j); ++dy){
             ref_j = j+dy;
-            res += h[Nx*Ny*(Nhx/2+dx + Nhx*(Nhy/2 + dy))+i+Nx*j]*input[ref_i+ref_j*Nx];
+            res += h[Nx*Ny*(Nhx/2+dx + Nhx*(Nhy/2 + dy))+i+Nx*j]*input[ref_i + Nx * ref_j];
         }
     }
     output[i+Nx*j] = res;
