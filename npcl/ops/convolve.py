@@ -63,7 +63,7 @@ def convolve2d(x, k, padding='zero'):
             )
         cache_size = 4*(TS+2*(k.shape[0]//2))*(TS+2*(k.shape[1]//2))
         run_kernel(
-            queue, padded_shape, (TS, TS),
+            queue, padded_shape[::-1], (TS, TS),
             x.data, k.data, cl.LocalMemory(cache_size), res.data,
             np.int32(x.shape[0]),
             np.int32(x.shape[1]),
@@ -80,7 +80,7 @@ def convolve2d(x, k, padding='zero'):
         queue = x.queue
         res = npcl.zeros_like(x)
         run_kernel(
-            queue, x.shape, None,
+            queue, x.shape[::-1], None,
             x.data, k.data, res.data,
             np.int32(k.shape[0]),
             np.int32(k.shape[1]),
@@ -115,7 +115,7 @@ def convolve2d_sv(x, k, padding='zero'):
     queue = x.queue
     res = npcl.zeros_like(x)
     run_kernel(
-        queue, x.shape, None,
+        queue, x.shape[::-1], None,
         x.data, k.data, res.data,
         np.int32(k.shape[0]),
         np.int32(k.shape[1]),
@@ -129,7 +129,7 @@ def transpose2d(k):
     queue = k.queue
     kernel = npcl.empty_like(k)
     prg.transpose2d(
-        queue, k.shape, None,
+        queue, k.shape[::-1], None,
         k.data, kernel.data,
         )
     return kernel
@@ -141,7 +141,7 @@ def transpose2d_sv(k):
     queue = k.queue
     kernel = npcl.empty_like(k)
     prg.transpose2d_sv(
-        queue, k.shape[2:], None,
+        queue, k.shape[2:][::-1], None,
         k.data, kernel.data,
         np.int32(k.shape[0]), np.int32(k.shape[1]),
         )

@@ -19,8 +19,8 @@ __kernel void transpose2d(
 __kernel void transpose2d_sv(
     __global const float * input,
     __global float * output,
-    const int Nhx,
-    const int Nhy
+    const int Nhy,
+    const int Nhx
     ){
     int i = get_global_id(0);
     int j = get_global_id(1);
@@ -44,8 +44,8 @@ __kernel void convolve2d_w(
     __global const float *input,
     __global const float *h,
     __global float *output,
-    const int Nhx,
-    const int Nhy
+    const int Nhy,
+    const int Nhx
     ){
     int i = get_global_id(0);
     int j = get_global_id(1);
@@ -72,8 +72,8 @@ __kernel void convolve2d_s(
     __global const float *input,
     __global const float *h,
     __global float *output,
-    const int Nhx,
-    const int Nhy
+    const int Nhy,
+    const int Nhx
     ){
     int i = get_global_id(0);
     int j = get_global_id(1);
@@ -100,8 +100,8 @@ __kernel void convolve2d_z(
     __global const float *input,
     __global const float *h,
     __global float *output,
-    const int Nhx,
-    const int Nhy
+    const int Nhy,
+    const int Nhx
     ){
     int i = get_global_id(0);
     int j = get_global_id(1);
@@ -130,10 +130,10 @@ __kernel void convolve2d_loc_z(
     __global const float *h,
     __local float *P,
     __global float *output,
-    const int Nx,
     const int Ny,
-    const int FSX,
-    const int FSY
+    const int Nx,
+    const int FSY,
+    const int FSX
     ){
     int i_g = get_global_id(0);
     int j_g = get_global_id(1);
@@ -201,10 +201,10 @@ __kernel void convolve2d_loc_s(
     __global const float *h,
     __local float *P,
     __global float *output,
-    const int Nx,
     const int Ny,
-    const int FSX,
-    const int FSY
+    const int Nx,
+    const int FSY,
+    const int FSX
     ){
     int i_g = get_global_id(0);
     int j_g = get_global_id(1);
@@ -275,10 +275,10 @@ __kernel void convolve2d_loc_w(
     __global const float *h,
     __local float *P,
     __global float *output,
-    const int Nx,
     const int Ny,
-    const int FSX,
-    const int FSY
+    const int Nx,
+    const int FSY,
+    const int FSX
     ){
     int i_g = get_global_id(0);
     int j_g = get_global_id(1);
@@ -348,8 +348,8 @@ __kernel void convolve2d_loc_w(
         __global const float *input,
         __global const float *h,
         __global float *output,
-        const int Nhx,
-        const int Nhy
+        const int Nhy,
+        const int Nhx
         ){
         int i = get_global_id(0);
         int j = get_global_id(1);
@@ -376,8 +376,8 @@ __kernel void convolve2d_sv_s(
     __global const float *input,
     __global const float *h,
     __global float *output,
-    const int Nhx,
-    const int Nhy
+    const int Nhy,
+    const int Nhx
     ){
     int i = get_global_id(0);
     int j = get_global_id(1);
@@ -404,8 +404,8 @@ __kernel void convolve2d_sv_z(
     __global const float *input,
     __global const float *h,
     __global float *output,
-    const int Nhx,
-    const int Nhy
+    const int Nhy,
+    const int Nhx
     ){
     int i = get_global_id(0);
     int j = get_global_id(1);

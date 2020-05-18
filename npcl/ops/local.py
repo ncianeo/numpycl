@@ -24,7 +24,7 @@ def grad2d(x):
     queue = x.queue
     gx = npcl.zeros_like(x)
     gy = npcl.zeros_like(x)
-    prg.grad(queue, x.shape, None, x.data, gx.data, gy.data)
+    prg.grad(queue, x.shape[::-1], None, x.data, gx.data, gy.data)
     return gx, gy
 
 
@@ -33,7 +33,7 @@ def norm2d(gx, gy):
         build(gx)
     queue = gx.queue
     norm = npcl.zeros_like(gx)
-    prg.norm(queue, norm.shape, None, gx.data, gy.data, norm.data)
+    prg.norm(queue, norm.shape[::-1], None, gx.data, gy.data, norm.data)
     return norm
 
 
@@ -42,7 +42,7 @@ def divergence2d(px, py):
         build(px)
     queue = px.queue
     d = npcl.zeros_like(px)
-    prg.divergence2d(queue, d.shape, None, px.data, py.data, d.data)
+    prg.divergence2d(queue, d.shape[::-1], None, px.data, py.data, d.data)
     return d
 
 
