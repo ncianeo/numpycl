@@ -177,7 +177,7 @@ __kernel void convolve2d_loc_z(
         
         barrier(CLK_LOCAL_MEM_FENCE);
         
-        float sum = 0.0;
+        float sum = 0.f;
         int i_ref, j_ref;
         #pragma unroll
         for (int dx = max(-HFSX, -i_g); dx <= min(HFSX, Nx-1-i_g); dx++){
@@ -251,7 +251,7 @@ __kernel void convolve2d_loc_s(
         
         barrier(CLK_LOCAL_MEM_FENCE);
         
-        float sum = 0.0;
+        float sum = 0.f;
         int i_ref, j_ref;
         #pragma unroll
         for (int dx = -HFSX; dx <= HFSX; dx++){
@@ -325,7 +325,7 @@ __kernel void convolve2d_loc_w(
         
         barrier(CLK_LOCAL_MEM_FENCE);
         
-        float sum = 0.0;
+        float sum = 0.f;
         int i_ref, j_ref;
         #pragma unroll
         for (int dx = -HFSX; dx <= HFSX; dx++){
