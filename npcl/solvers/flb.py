@@ -72,7 +72,7 @@ def solve_flb(
         r_new = A(x_new) - b
         if norm(r_new) < normb*tol:
             break
-        if k == max_iter:
+        if k >= max_iter:
             break
         x = x_new.copy()
     return x_new, k
