@@ -1,5 +1,5 @@
 from npcl import to_device
-from npcl.solvers.inpaint import inpaint_h1
+from npcl.solvers.inpaint import inpaint_tv
 import numpy as np
 import cv2
 from time import time
@@ -19,13 +19,11 @@ cv2.waitKey(0)
 cv2.destroyAllWindows()
 
 
-mu = np.float32(1)
-x_0 = to_device(np.zeros(img.shape))
-
+mu = np.float32(1e-2)
 
 start = time()
-inpainted, iters = inpaint_h1(
-    contaminated, mask, tol=1e-6,
+inpainted, iters = inpaint_tv(
+    contaminated, mask, mu=mu, gamma=np.float32(100*mu), tol=1e-4,
     verbose=True,
     )
 
