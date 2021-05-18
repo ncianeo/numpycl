@@ -135,8 +135,11 @@ __kernel void convolve2d_loc_z(
     const int FSY,
     const int FSX
     ){
-    int i_g = get_global_id(0);
-    int j_g = get_global_id(1);
+    
+    // Ny: number of rows, Nx: number of columns
+
+    int i_g = get_global_id(0); // i_g corresponds to column, X
+    int j_g = get_global_id(1); // j_g corresponds to row, Y
     
     int i_loc = get_local_id(0);
     int j_loc = get_local_id(1);
@@ -180,10 +183,10 @@ __kernel void convolve2d_loc_z(
         float sum = 0.f;
         int i_ref, j_ref;
         #pragma unroll
-        for (int dx = max(-HFSX, -i_g); dx <= min(HFSX, Nx-1-i_g); dx++){
+        for (int dx = -min(HFSX, i_g); dx <= min(HFSX, Nx-1-i_g); dx++){
             i_ref = i_loc + HFSX + dx;
             #pragma unroll
-            for (int dy = max(-HFSY, -j_g); dy <= min(HFSY, Ny-1-j_g); dy++){
+            for (int dy = -min(HFSY, j_g); dy <= min(HFSY, Ny-1-j_g); dy++){
                 j_ref = j_loc + HFSY + dy;
                 sum += P[i_ref + (TS+PSX)*j_ref] * h[dx + HFSX + FSX * (dy + HFSY)];
             }

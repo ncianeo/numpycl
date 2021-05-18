@@ -16,7 +16,7 @@ def build(parameter):
     kernel_fp = abspath(__file__).replace('.py', '.cl')
     prg = cl.Program(ctx, open(kernel_fp, 'r').read())
     prg.build()
-    local_mem_size = npcl.get_local_mem_size() / 4
+    local_mem_size = npcl.get_local_mem_size() // 4
     TS = np.int32(np.sqrt(npcl.get_max_work_group_size()))
 
 
@@ -62,29 +62,31 @@ def convolve2d(x, k, padding='zero'):
             x.shape[1]+(-x.shape[1]) % TS,
             )
         cache_size = 4*(TS+2*(k.shape[0]//2))*(TS+2*(k.shape[1]//2))
-        run_kernel(
-            queue, padded_shape[::-1], (TS, TS),
-            x.data, k.data, cl.LocalMemory(cache_size), res.data,
-            np.int32(x.shape[0]),
-            np.int32(x.shape[1]),
-            np.int32(k.shape[0]),
-            np.int32(k.shape[1]),
-            )
-    else:
-        if padding == 'zero':
-            run_kernel = prg.convolve2d_z
-        elif padding == 'same':
-            run_kernel = prg.convolve2d_s
-        elif padding == 'wrap':
-            run_kernel = prg.convolve2d_w
-        queue = x.queue
-        res = npcl.zeros_like(x)
-        run_kernel(
-            queue, x.shape[::-1], None,
-            x.data, k.data, res.data,
-            np.int32(k.shape[0]),
-            np.int32(k.shape[1]),
-            )
+        if 'intel' not in prg.context.devices[0].vendor.lower() or x.shape==padded_shape:
+            run_kernel(
+                queue, padded_shape[::-1], (TS, TS),
+                x.data, k.data, cl.LocalMemory(cache_size), res.data,
+                np.int32(x.shape[0]),
+                np.int32(x.shape[1]),
+                np.int32(k.shape[0]),
+                np.int32(k.shape[1]),
+                )
+            return res
+
+    if padding == 'zero':
+        run_kernel = prg.convolve2d_z
+    elif padding == 'same':
+        run_kernel = prg.convolve2d_s
+    elif padding == 'wrap':
+        run_kernel = prg.convolve2d_w
+    queue = x.queue
+    res = npcl.zeros_like(x)
+    run_kernel(
+        queue, x.shape[::-1], None,
+        x.data, k.data, res.data,
+        np.int32(k.shape[0]),
+        np.int32(k.shape[1]),
+        )
     return res
 
 

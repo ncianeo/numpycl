@@ -22,12 +22,14 @@ setup(
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3.8',
+        'Programming Language :: Python :: 3.9',
     ],
     keywords='image processing',
 
     install_requires=[
         'numpy>=1.11.0',
         'pyopencl>=2019.1',
+        'mako',
         ],
 
     package_data={
